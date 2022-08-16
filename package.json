@@ -1,6 +1,7 @@
 {
   "name": "yt-playlist-gen",
   "version": "0.1.0",
+  "homepage": "https://raphaelratuczne.github.io/yt-playlist-gen",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.14.1",
@@ -17,6 +18,8 @@
     "web-vitals": "^2.1.0"
   },
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "set PORT=8080 && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
