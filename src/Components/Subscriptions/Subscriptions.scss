@@ -1,0 +1,31 @@
+.subscriptions {
+  .list {
+    list-style: none;
+    padding: 0 5px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    width: 100%;
+
+    .item {
+      display: flex;
+      width: 24%;
+      height: 45px;
+
+      a {
+        flex: auto;
+      }
+
+      .btn {
+        height: 24px;
+        width: 26px;
+
+        &.active {
+          background-color: darkseagreen;
+          border-color: darkcyan;
+          color: green;
+        }
+      }
+    }
+  }
+}

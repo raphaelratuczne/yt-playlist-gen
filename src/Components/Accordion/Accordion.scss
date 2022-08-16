@@ -1,0 +1,29 @@
+.accordion {
+  // display: block;
+  // height: auto;
+
+  .btnAccordion {
+    background-color: #eee;
+    color: #444;
+    cursor: pointer;
+    padding: 16px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    outline: none;
+    transition: 0.4s;
+
+    &.active,
+    &:hover {
+      background-color: #ddd;
+    }
+  }
+
+  .panel {
+    padding: 0 10px;
+    background-color: white;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease-out;
+  }
+}
