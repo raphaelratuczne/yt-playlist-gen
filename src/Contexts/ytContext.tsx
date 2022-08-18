@@ -156,12 +156,13 @@ export const YtContextProvider = ({ children }: any) => {
 
   const login = () => {
     if (clientID) {
-      const redirect_uri = 'http%3A%2F%2Flocalhost%3A8080';
+      const redirect_uri = 'https://raphaelratuczne.github.io/yt-playlist-gen/';
       const scope =
         'https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/youtubepartner';
       const response_type = 'token';
       const url = `https://accounts.google.com/o/oauth2/auth?client_id=${clientID}&redirect_uri=${redirect_uri}&scope=${scope}&response_type=${response_type}`;
-      window.location.href = url;
+      console.log('url', url);
+      // window.location.href = url;
     }
   };
 
