@@ -161,8 +161,8 @@ export const YtContextProvider = ({ children }: any) => {
         'https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/youtubepartner';
       const response_type = 'token';
       const url = `https://accounts.google.com/o/oauth2/auth?client_id=${clientID}&redirect_uri=${redirect_uri}&scope=${scope}&response_type=${response_type}`;
-      console.log('url', url);
-      // window.location.href = url;
+      // console.log('url', url);
+      window.location.href = url;
     }
   };
 
