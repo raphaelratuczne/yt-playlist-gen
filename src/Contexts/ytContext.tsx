@@ -25,6 +25,7 @@ const FOLLOWING = 'following';
 type YtContextType = {
   logged: boolean;
   login: () => void;
+  logout: () => void;
   clientID: string;
   setClientID: (value: string) => void;
   watchLaterPlaylist: string;
@@ -73,6 +74,7 @@ type YtContextType = {
 const YtDefaultValue: YtContextType = {
   logged: false,
   login: () => null,
+  logout: () => null,
   clientID: '',
   setClientID: (value: string) => null,
   watchLaterPlaylist: '',
@@ -164,6 +166,10 @@ export const YtContextProvider = ({ children }: any) => {
       // console.log('url', url);
       window.location.href = url;
     }
+  };
+
+  const logout = () => {
+    window.location.href = 'https://raphaelratuczne.github.io/yt-playlist-gen/';
   };
 
   const loadAllSubscriptedPages = async (
@@ -513,6 +519,7 @@ export const YtContextProvider = ({ children }: any) => {
       value={{
         logged,
         login,
+        logout,
         clientID,
         setClientID,
         watchLaterPlaylist,

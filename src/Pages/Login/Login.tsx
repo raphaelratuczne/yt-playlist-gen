@@ -6,14 +6,22 @@ import Accordion from '../../Components/Accordion/Accordion';
 import DataManager from '../../Components/DataManager/DataManager';
 
 const Login = () => {
-  const { logged, login } = useYtContext();
+  const { logged, login, logout } = useYtContext();
   return (
     <div className="login">
       <Accordion label="Importar/Exportar">
         <DataManager />
       </Accordion>
       <h2>Login</h2>
-      {!logged && (
+      {logged ? (
+        <>
+          <button type="button" onClick={logout}>
+            Logout
+          </button>
+          <br />
+          <br />
+        </>
+      ) : (
         <>
           <button type="button" onClick={login}>
             Login
