@@ -69,6 +69,14 @@ type YtContextType = {
   ) => Promise<any>;
   exportDataAsFile: () => void;
   importDataFromFile: () => void;
+  videosFromPlaylist: PlaylistItem[];
+  loadVideosFromPlaylist: (
+    playlistId: string,
+    page?: string,
+    list?: PlaylistItem[]
+  ) => Promise<PlaylistItem[]>;
+  sortLoadedVideosFromPlaylist: () => void;
+  updatePlaylistDayItems: (playlistId: string) => void;
 };
 
 const YtDefaultValue: YtContextType = {
@@ -109,6 +117,14 @@ const YtDefaultValue: YtContextType = {
     Promise.resolve(null),
   exportDataAsFile: () => null,
   importDataFromFile: () => null,
+  videosFromPlaylist: [],
+  loadVideosFromPlaylist: (
+    playlistId: string,
+    page?: string,
+    list?: PlaylistItem[]
+  ) => Promise.resolve([]),
+  sortLoadedVideosFromPlaylist: () => null,
+  updatePlaylistDayItems: (playlistId: string) => null,
 };
 
 export const YtContext = createContext<YtContextType>(YtDefaultValue);
@@ -138,6 +154,9 @@ export const YtContextProvider = ({ children }: any) => {
     PlaylistItem[]
   >([]);
   const [followingVideoList, setFollowingVideoList] = useState<Video[]>([]);
+  const [videosFromPlaylist, setVideosFromPlaylist] = useState<PlaylistItem[]>(
+    []
+  );
 
   useEffect(() => {
     const queryString = window.location.hash.substring(1);
@@ -363,7 +382,10 @@ export const YtContextProvider = ({ children }: any) => {
       (v) => v.snippet.resourceId.videoId
     );
     const idsFoll = followingVideoList.map((v) => v.id.videoId);
-    const ids = [...idsPlay, ...idsFoll].join(',');
+    const idsVidDay = videosFromPlaylist.map(
+      (v) => v.snippet.resourceId.videoId
+    );
+    const ids = [...idsPlay, ...idsFoll, ...idsVidDay].join(',');
     const url = 'https://www.googleapis.com/youtube/v3/videos';
     const params = {
       part: 'id,contentDetails', // ,snippet,fileDetails,player,processingDetails,recordingDetails,statistics,status,suggestions,topicDetails
@@ -404,6 +426,20 @@ export const YtContextProvider = ({ children }: any) => {
         return v;
       });
       setVideosFromPlaylistsFollowing(vpf);
+      const vd = [...videosFromPlaylist].map((v) => {
+        const dur = items.find((i) => v.snippet.resourceId.videoId === i.id);
+        if (dur) {
+          return {
+            ...v,
+            snippet: {
+              ...v.snippet,
+              duration: dur.contentDetails.duration,
+            },
+          };
+        }
+        return v;
+      });
+      setVideosFromPlaylist(vd);
 
       if (nextPageToken) {
         await loadVideosDuration(nextPageToken);
@@ -514,6 +550,92 @@ export const YtContextProvider = ({ children }: any) => {
     input.click();
   };
 
+  const loadVideosFromPlaylist = async (
+    playlistId: string,
+    page: string = '',
+    list: PlaylistItem[] = []
+  ): Promise<PlaylistItem[]> => {
+    try {
+      const url = 'https://www.googleapis.com/youtube/v3/playlistItems';
+      const params = {
+        part: 'snippet',
+        playlistId,
+        mine: 'true',
+        maxResults: 50,
+        ...(page && { pageToken: page }),
+      };
+      const resp = await axios.get<PlaylistResp>(url, { headers, params });
+      const { data } = resp;
+      const items = [...list, ...data.items];
+      if (data.nextPageToken) {
+        return await loadVideosFromPlaylist(
+          playlistId,
+          data.nextPageToken,
+          items
+        );
+      }
+      setVideosFromPlaylist(items);
+      return items;
+    } catch (e) {
+      console.log('error', e);
+      // window.location.href = "/";
+      setVideosFromPlaylist([]);
+      return [];
+    }
+  };
+
+  const sortLoadedVideosFromPlaylist = () => {
+    const list = [...videosFromPlaylist];
+    setVideosFromPlaylist([]);
+    const sList = list.sort((a, b) => {
+      const ta = convertDurationToNumber(a.snippet.duration || '');
+      const tb = convertDurationToNumber(b.snippet.duration || '');
+      if (ta > tb) return 1;
+      else if (ta < tb) return -1;
+      else return 0;
+    });
+    console.log('sList', sList);
+    setVideosFromPlaylist(sList);
+  };
+
+  const updatePlaylistDayItems = async (playlistId: string) => {
+    try {
+      const url =
+        'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet';
+      let i = 0;
+      for (const wlv of watchLaterSelectedVideos) {
+        const data = {
+          snippet: {
+            playlistId,
+            resourceId: {
+              kind: 'youtube#video',
+              videoId: wlv.snippet.resourceId.videoId,
+            },
+            position: i++,
+          },
+        };
+        await axios.post<PlaylistResp>(url, data, { headers });
+      }
+      for (const v of videosFromPlaylist) {
+        const data = {
+          id: v.id,
+          snippet: {
+            playlistId,
+            resourceId: {
+              kind: 'youtube#video',
+              videoId: v.snippet.resourceId.videoId,
+            },
+            position: i++,
+          },
+        };
+        await axios.put<PlaylistResp>(url, data, { headers });
+      }
+      console.log('terminou');
+    } catch (e) {
+      console.log('error', e);
+    }
+  };
+
   return (
     <YtContext.Provider
       value={{
@@ -550,6 +672,10 @@ export const YtContextProvider = ({ children }: any) => {
         savePlaylistItems,
         exportDataAsFile,
         importDataFromFile,
+        videosFromPlaylist,
+        loadVideosFromPlaylist,
+        sortLoadedVideosFromPlaylist,
+        updatePlaylistDayItems,
       }}
     >
       {children}

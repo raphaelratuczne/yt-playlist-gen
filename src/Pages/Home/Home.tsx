@@ -9,6 +9,7 @@ import KillingVideos from '../../Components/KillingVideos/KillingVideos';
 import PlaylistsFollowingVideos from '../../Components/PlaylistsFollowingVideos/PlaylistsFollowingVideos';
 import FollowingVideos from '../../Components/FollowingVideos/FollowingVideos';
 import PlaylistOfDay from '../../Components/PlaylistOfDay/PlaylistOfDay';
+import SortPlaylistOfDay from '../../Components/SortPlaylistOfDay/SortPlaylistOfDay';
 
 const Home = () => {
   return (
@@ -37,6 +38,9 @@ const Home = () => {
       </Accordion>
       <Accordion label="Playlist do dia">
         <PlaylistOfDay />
+      </Accordion>
+      <Accordion label="Ordenar playlist do dia">
+        <SortPlaylistOfDay />
       </Accordion>
     </div>
   );
