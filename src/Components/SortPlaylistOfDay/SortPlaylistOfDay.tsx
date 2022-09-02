@@ -20,19 +20,30 @@ const SortPlaylistOfDay = () => {
     const d = new Date().getDay();
     return String(d);
   });
+  const [loading, setLoading] = useState(false);
 
-  const loadVideos = () => {
+  const loadVideos = async () => {
+    setLoading(true);
     const { playlist } = dailyPlaylists.find(
       (d) => d.day === selectedPlaylist
     )!;
-    loadVideosFromPlaylist(playlist);
+    await loadVideosFromPlaylist(playlist);
+    setLoading(false);
   };
 
-  const updatePlaylist = () => {
+  const loadDuration = async () => {
+    setLoading(true);
+    await loadVideosDuration();
+    setLoading(false);
+  };
+
+  const updatePlaylist = async () => {
+    setLoading(true);
     const { playlist } = dailyPlaylists.find(
       (d) => d.day === selectedPlaylist
     )!;
-    updatePlaylistDayItems(playlist);
+    await updatePlaylistDayItems(playlist);
+    setLoading(false);
   };
 
   return (
@@ -50,22 +61,26 @@ const SortPlaylistOfDay = () => {
         ))}
       </select>
       {logged && (
-        <button type="button" onClick={loadVideos}>
+        <button type="button" onClick={loadVideos} disabled={loading}>
           Carregar videos
         </button>
       )}
       {videosFromPlaylist.length > 0 && (
-        <button type="button" onClick={() => loadVideosDuration()}>
+        <button type="button" onClick={loadDuration} disabled={loading}>
           Carregar duração dos videos
         </button>
       )}
       {videosFromPlaylist.length > 0 && videosFromPlaylist[0].snippet.duration && (
-        <button type="button" onClick={sortLoadedVideosFromPlaylist}>
+        <button
+          type="button"
+          onClick={sortLoadedVideosFromPlaylist}
+          disabled={loading}
+        >
           Ordenar por duração
         </button>
       )}
       {videosFromPlaylist.length > 0 && (
-        <button type="button" onClick={updatePlaylist}>
+        <button type="button" onClick={updatePlaylist} disabled={loading}>
           Atualizar playlist
         </button>
       )}

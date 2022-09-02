@@ -377,7 +377,7 @@ export const YtContextProvider = ({ children }: any) => {
     );
   };
 
-  const loadVideosDuration = async (page = '') => {
+  const loadVideosDuration = async () => {
     const idsPlay = videosFromPlaylistsFollowing.map(
       (v) => v.snippet.resourceId.videoId
     );
@@ -385,64 +385,84 @@ export const YtContextProvider = ({ children }: any) => {
     const idsVidDay = videosFromPlaylist.map(
       (v) => v.snippet.resourceId.videoId
     );
-    const ids = [...idsPlay, ...idsFoll, ...idsVidDay].join(',');
-    const url = 'https://www.googleapis.com/youtube/v3/videos';
-    const params = {
-      part: 'id,contentDetails', // ,snippet,fileDetails,player,processingDetails,recordingDetails,statistics,status,suggestions,topicDetails
-      id: ids,
-      maxResults: 50,
-      ...(page && { pageToken: page }),
-    };
-    const {
-      data: { items, nextPageToken },
-    } = await axios.get<VideoResp>(url, { headers, params });
-    console.log('items', items, 'nextPageToken', nextPageToken);
-    if (items.length > 0) {
-      const flv = [...followingVideoList].map((v) => {
-        const dur = items.find((i) => v.id.videoId === i.id);
-        if (dur) {
-          return {
-            ...v,
-            snippet: {
-              ...v.snippet,
-              duration: dur.contentDetails.duration,
-            },
-          };
-        }
-        return v;
-      });
-      setFollowingVideoList(flv);
-      const vpf = [...videosFromPlaylistsFollowing].map((v) => {
-        const dur = items.find((i) => v.snippet.resourceId.videoId === i.id);
-        if (dur) {
-          return {
-            ...v,
-            snippet: {
-              ...v.snippet,
-              duration: dur.contentDetails.duration,
-            },
-          };
-        }
-        return v;
-      });
-      setVideosFromPlaylistsFollowing(vpf);
-      const vd = [...videosFromPlaylist].map((v) => {
-        const dur = items.find((i) => v.snippet.resourceId.videoId === i.id);
-        if (dur) {
-          return {
-            ...v,
-            snippet: {
-              ...v.snippet,
-              duration: dur.contentDetails.duration,
-            },
-          };
-        }
-        return v;
-      });
-      setVideosFromPlaylist(vd);
+    const arrIds = [...idsPlay, ...idsFoll, ...idsVidDay];
+    const subArrIds: Array<string[]> = [[]];
+    let i = 0;
+    let k = 0;
+    for (const id of arrIds) {
+      if (i++ < 50) {
+        subArrIds[k].push(id);
+      } else {
+        i = 0;
+        k++;
+        subArrIds.push([]);
+        subArrIds[k].push(id);
+      }
+    }
 
-      if (nextPageToken) {
-        await loadVideosDuration(nextPageToken);
+    for (const subArr of subArrIds) {
+      const ids = subArr.join(',');
+      const url = 'https://www.googleapis.com/youtube/v3/videos';
+      const params = {
+        part: 'id,contentDetails', // ,snippet,fileDetails,player,processingDetails,recordingDetails,statistics,status,suggestions,topicDetails
+        id: ids,
+        // maxResults: 50,
+        // ...(page && { pageToken: page }),
+      };
+      const {
+        data: { items },
+      } = await axios.get<VideoResp>(url, { headers, params });
+      console.log('items', items);
+      if (items.length > 0) {
+        setFollowingVideoList((flv) => {
+          return flv.map((v) => {
+            const dur = items.find((i) => v.id.videoId === i.id);
+            if (dur) {
+              return {
+                ...v,
+                snippet: {
+                  ...v.snippet,
+                  duration: dur.contentDetails.duration,
+                },
+              };
+            }
+            return v;
+          });
+        });
+        setVideosFromPlaylistsFollowing((vpf) => {
+          return vpf.map((v) => {
+            const dur = items.find(
+              (i) => v.snippet.resourceId.videoId === i.id
+            );
+            if (dur) {
+              return {
+                ...v,
+                snippet: {
+                  ...v.snippet,
+                  duration: dur.contentDetails.duration,
+                },
+              };
+            }
+            return v;
+          });
+        });
+        setVideosFromPlaylist((vd) => {
+          return vd.map((v) => {
+            const dur = items.find(
+              (i) => v.snippet.resourceId.videoId === i.id
+            );
+            if (dur) {
+              return {
+                ...v,
+                snippet: {
+                  ...v.snippet,
+                  duration: dur.contentDetails.duration,
+                },
+              };
+            }
+            return v;
+          });
+        });
       }
     }
   };
