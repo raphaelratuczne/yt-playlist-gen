@@ -387,7 +387,7 @@ export const YtContextProvider = ({ children }: any) => {
     );
     const arrIds = [...idsPlay, ...idsFoll, ...idsVidDay];
     const subArrIds: Array<string[]> = [[]];
-    let i = 0;
+    let i = 1;
     let k = 0;
     for (const id of arrIds) {
       if (i++ < 50) {
