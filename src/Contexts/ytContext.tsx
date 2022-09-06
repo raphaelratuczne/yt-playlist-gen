@@ -605,15 +605,14 @@ export const YtContextProvider = ({ children }: any) => {
   };
 
   const sortLoadedVideosFromPlaylist = () => {
-    const list = [...videosFromPlaylist];
-    setVideosFromPlaylist([]);
-    const sList = list.sort((a, b) => {
+    const sList = [...videosFromPlaylist].sort((a, b) => {
       const ta = convertDurationToNumber(a.snippet.duration || '');
       const tb = convertDurationToNumber(b.snippet.duration || '');
       if (ta > tb) return 1;
       else if (ta < tb) return -1;
       else return 0;
     });
+    setVideosFromPlaylist([]);
     console.log('sList', sList);
     setVideosFromPlaylist(sList);
   };
