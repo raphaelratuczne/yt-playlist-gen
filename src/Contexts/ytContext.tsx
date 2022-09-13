@@ -634,6 +634,7 @@ export const YtContextProvider = ({ children }: any) => {
           },
         };
         await axios.post<PlaylistResp>(url, data, { headers });
+        await deletePlaylistVideo(wlv.id);
       }
       for (const v of videosFromPlaylist) {
         const data = {
@@ -650,6 +651,15 @@ export const YtContextProvider = ({ children }: any) => {
         await axios.put<PlaylistResp>(url, data, { headers });
       }
       console.log('terminou');
+    } catch (e) {
+      console.log('error', e);
+    }
+  };
+
+  const deletePlaylistVideo = async (id: string) => {
+    try {
+      const url = `https://www.googleapis.com/youtube/v3/playlistItems?id=${id}`;
+      await axios.delete(url, { headers });
     } catch (e) {
       console.log('error', e);
     }
