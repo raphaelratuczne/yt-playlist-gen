@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './SortPlaylistOfDay.scss';
 import { useYtContext } from '../../Contexts/ytContext';
 // import { Video, PlaylistItem } from '../../Models';
-import { convertDuration } from '../../Utils/functions';
+import { convertDuration, sleep } from '../../Utils/functions';
 
 const SortPlaylistOfDay = () => {
   const {
@@ -66,13 +66,17 @@ const SortPlaylistOfDay = () => {
 
   const automate = async () => {
     await loadVideos();
+    await sleep(600);
     await loadDuration();
+    await sleep(600);
     await sortLoadedVideosFromPlaylist();
+    await sleep(600);
     await updatePlaylist();
   };
 
   const automateWL = async () => {
     await loadKillingVideos();
+    await sleep(600);
     await automate();
   };
 

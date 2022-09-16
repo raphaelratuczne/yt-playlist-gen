@@ -29,3 +29,7 @@ export function convertDurationToNumber(duration: string) {
   }
   return 0;
 }
+
+export async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
