@@ -66,17 +66,16 @@ const SortPlaylistOfDay = () => {
 
   const automate = async () => {
     await loadVideos();
-    await sleep(600);
+    await sleep(1500);
     await loadDuration();
-    await sleep(600);
+    await sleep(1500);
     await sortLoadedVideosFromPlaylist();
-    await sleep(600);
+    await sleep(1500);
     await updatePlaylist();
   };
 
   const automateWL = async () => {
     await loadKillingVideos();
-    await sleep(600);
     await automate();
   };
 
