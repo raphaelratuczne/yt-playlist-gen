@@ -64,14 +64,23 @@ const SortPlaylistOfDay = () => {
     }
   };
 
+  // const automate = async () => {
+  //   await loadVideos();
+  //   await loadDuration();
+  //   await sortLoadedVideosFromPlaylist();
+  //   await updatePlaylist();
+  // };
+
   const automate = async () => {
-    await loadVideos();
-    await sleep(1500);
-    await loadDuration();
-    await sleep(1500);
+    setLoading(true);
+    const { playlist } = dailyPlaylists.find(
+      (d) => d.day === selectedPlaylist
+    )!;
+    await loadVideosFromPlaylist(playlist);
+    await loadVideosDuration();
     await sortLoadedVideosFromPlaylist();
-    await sleep(1500);
-    await updatePlaylist();
+    await updatePlaylistDayItems(playlist);
+    setLoading(false);
   };
 
   const automateWL = async () => {
@@ -109,15 +118,16 @@ const SortPlaylistOfDay = () => {
           Carregar duração dos videos
         </button>
       )}
-      {videosFromPlaylist.length > 0 && videosFromPlaylist[0].snippet.duration && (
-        <button
-          type="button"
-          onClick={sortLoadedVideosFromPlaylist}
-          disabled={loading}
-        >
-          Ordenar por duração
-        </button>
-      )}
+      {videosFromPlaylist.length > 0 &&
+        videosFromPlaylist[0].snippet.duration && (
+          <button
+            type="button"
+            onClick={sortLoadedVideosFromPlaylist}
+            disabled={loading}
+          >
+            Ordenar por duração
+          </button>
+        )}
       {videosFromPlaylist.length > 0 && (
         <button type="button" onClick={updatePlaylist} disabled={loading}>
           Atualizar playlist
