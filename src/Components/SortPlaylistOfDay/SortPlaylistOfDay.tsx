@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './SortPlaylistOfDay.scss';
 import { useYtContext } from '../../Contexts/ytContext';
 // import { Video, PlaylistItem } from '../../Models';
-import { convertDuration, sleep } from '../../Utils/functions';
+import { convertDuration } from '../../Utils/functions';
 
 const SortPlaylistOfDay = () => {
   const {
@@ -64,22 +64,16 @@ const SortPlaylistOfDay = () => {
     }
   };
 
-  // const automate = async () => {
-  //   await loadVideos();
-  //   await loadDuration();
-  //   await sortLoadedVideosFromPlaylist();
-  //   await updatePlaylist();
-  // };
-
   const automate = async () => {
     setLoading(true);
     const { playlist } = dailyPlaylists.find(
       (d) => d.day === selectedPlaylist
     )!;
-    await loadVideosFromPlaylist(playlist);
-    await loadVideosDuration();
-    await sortLoadedVideosFromPlaylist();
-    await updatePlaylistDayItems(playlist);
+    let videos = await loadVideosFromPlaylist(playlist);
+    setTotalVideos(videos.length);
+    videos = await loadVideosDuration(videos);
+    videos = await sortLoadedVideosFromPlaylist(videos);
+    await updatePlaylistDayItems(playlist, videos);
     setLoading(false);
   };
 
@@ -122,7 +116,7 @@ const SortPlaylistOfDay = () => {
         videosFromPlaylist[0].snippet.duration && (
           <button
             type="button"
-            onClick={sortLoadedVideosFromPlaylist}
+            onClick={() => sortLoadedVideosFromPlaylist()}
             disabled={loading}
           >
             Ordenar por duração

@@ -60,7 +60,7 @@ type YtContextType = {
   ) => Promise<any>;
   followingVideoList: Video[];
   removeVideoFromFollowing: (v: Video) => void;
-  loadVideosDuration: () => Promise<any>;
+  loadVideosDuration: (videosDay?: PlaylistItem[]) => Promise<any>;
   sortFollowingVideoListByDuration: () => void;
   savePlaylistItems: (
     playlistId: string,
@@ -75,8 +75,8 @@ type YtContextType = {
     page?: string,
     list?: PlaylistItem[]
   ) => Promise<PlaylistItem[]>;
-  sortLoadedVideosFromPlaylist: () => Promise<void>;
-  updatePlaylistDayItems: (playlistId: string) => void;
+  sortLoadedVideosFromPlaylist: (videos?: PlaylistItem[]) => Promise<any>;
+  updatePlaylistDayItems: (playlistId: string, videos?: PlaylistItem[]) => void;
   savingVideo: number;
 };
 
@@ -112,7 +112,7 @@ const YtDefaultValue: YtContextType = {
     Promise.resolve(null),
   followingVideoList: [],
   removeVideoFromFollowing: (v: Video) => null,
-  loadVideosDuration: () => Promise.resolve(null),
+  loadVideosDuration: (videosDay?: PlaylistItem[]) => Promise.resolve(null),
   sortFollowingVideoListByDuration: () => null,
   savePlaylistItems: (playlistId: string, pl1: PlaylistItem[], pl2: Video[]) =>
     Promise.resolve(null),
@@ -124,8 +124,9 @@ const YtDefaultValue: YtContextType = {
     page?: string,
     list?: PlaylistItem[]
   ) => Promise.resolve([]),
-  sortLoadedVideosFromPlaylist: () => Promise.resolve(),
-  updatePlaylistDayItems: (playlistId: string) => null,
+  sortLoadedVideosFromPlaylist: (videos?: PlaylistItem[]) =>
+    Promise.resolve([]),
+  updatePlaylistDayItems: (playlistId: string, videos?: PlaylistItem[]) => null,
   savingVideo: 0,
 };
 
@@ -380,12 +381,12 @@ export const YtContextProvider = ({ children }: any) => {
     );
   };
 
-  const loadVideosDuration = async () => {
+  const loadVideosDuration = async (videosDay?: PlaylistItem[]) => {
     const idsPlay = videosFromPlaylistsFollowing.map(
       (v) => v.snippet.resourceId.videoId
     );
     const idsFoll = followingVideoList.map((v) => v.id.videoId);
-    const idsVidDay = videosFromPlaylist.map(
+    const idsVidDay = (videosDay || videosFromPlaylist).map(
       (v) => v.snippet.resourceId.videoId
     );
     const arrIds = [...idsPlay, ...idsFoll, ...idsVidDay];
@@ -466,6 +467,23 @@ export const YtContextProvider = ({ children }: any) => {
             return v;
           });
         });
+        if (videosDay) {
+          return videosDay.map((v) => {
+            const dur = items.find(
+              (i) => v.snippet.resourceId.videoId === i.id
+            );
+            if (dur) {
+              return {
+                ...v,
+                snippet: {
+                  ...v.snippet,
+                  duration: dur.contentDetails.duration,
+                },
+              };
+            }
+            return v;
+          });
+        }
       }
     }
   };
@@ -607,23 +625,32 @@ export const YtContextProvider = ({ children }: any) => {
     }
   };
 
-  const sortLoadedVideosFromPlaylist = async () => {
-    new Promise((resolve) => {
-      const sList = [...videosFromPlaylist].sort((a, b) => {
+  const sortLoadedVideosFromPlaylist = async (videos?: PlaylistItem[]) => {
+    return new Promise((resolve) => {
+      const fSort = (a: PlaylistItem, b: PlaylistItem) => {
         const ta = convertDurationToNumber(a.snippet.duration || '');
         const tb = convertDurationToNumber(b.snippet.duration || '');
         if (ta > tb) return 1;
         else if (ta < tb) return -1;
         else return 0;
-      });
+      };
+      const sList = [...videosFromPlaylist].sort(fSort);
       setVideosFromPlaylist([]);
       console.log('sList', sList);
       setVideosFromPlaylist(sList);
-      resolve(null);
+      if (videos) {
+        videos = [...videos].sort(fSort);
+        resolve(videos);
+      } else {
+        resolve([]);
+      }
     });
   };
 
-  const updatePlaylistDayItems = async (playlistId: string) => {
+  const updatePlaylistDayItems = async (
+    playlistId: string,
+    videos?: PlaylistItem[]
+  ) => {
     try {
       const url =
         'https://www.googleapis.com/youtube/v3/playlistItems?part=snippet';
@@ -644,7 +671,7 @@ export const YtContextProvider = ({ children }: any) => {
         await axios.post<PlaylistResp>(url, data, { headers });
         await deletePlaylistVideo(wlv.id);
       }
-      for (const v of videosFromPlaylist) {
+      for (const v of videos || videosFromPlaylist) {
         const data = {
           id: v.id,
           snippet: {
